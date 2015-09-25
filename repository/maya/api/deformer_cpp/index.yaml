@@ -1,0 +1,12 @@
+name: "Noise Deformer"
+
+id: "burnhill.maya.api.noisedeformer"
+
+description: "A simple maya noise deformer."
+
+language: cpp
+
+files:
+  - [source.h, "{{project}}.h"]
+  - [source.cpp, "{{project}}.cpp"]
+  - [perlinNoise.hpp, perlinNoise.hpp]
