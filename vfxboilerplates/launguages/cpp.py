@@ -1,4 +1,4 @@
-from vfxboilerplates.launguages import Language
+from code import Code
 import jinja2
 
 HEADER =\
@@ -11,13 +11,13 @@ r"""
 #ifndef {{project | upper}}_H
 #define {{project | upper}}_H"""
 
-class Cpp(Language):
+
+class Cpp(Code):
     def __init__(self, keywords):
         super(Cpp, self).__init__(keywords)
 
     @property
     def header(self):
-        print self.keywords
         header = HEADER
         if self.keywords['filename'].endswith(".h"):
             header += HEADER_GUARD

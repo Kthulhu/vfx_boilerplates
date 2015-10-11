@@ -1,0 +1,14 @@
+name: "Constant Shader"
+
+author: "Fredrik Brännbacka"
+
+id: "burnhill.arnold.shaders.constant"
+
+description: "A simple arnold constant shader."
+
+language: cpp
+
+application: arnold
+
+files:
+  - [source.cpp, "{{project}}.cpp"]

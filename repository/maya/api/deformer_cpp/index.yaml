@@ -1,10 +1,14 @@
 name: "Noise Deformer"
 
+author: "Fredrik Brännbacka"
+
 id: "burnhill.maya.api.noisedeformer"
 
 description: "A simple maya noise deformer."
 
 language: cpp
+
+application: maya
 
 files:
   - [source.h, "{{project}}.h"]

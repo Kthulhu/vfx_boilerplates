@@ -20,7 +20,7 @@ public:
     static MObject a_multiplier;
 
 };
-MTypeId {{project | classify}}::id( 0x8000e );
+MTypeId {{project | classify}}::id( {{maya.id}} );
 MObject {{project | classify}}::a_frequency;
 MObject {{project | classify}}::a_multiplier;
 

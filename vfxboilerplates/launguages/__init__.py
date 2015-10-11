@@ -1,11 +1,9 @@
+from cpp import Cpp
 
-class Language(object):
-    def __init__(self, keywords):
-        self.keywords = keywords
+languages = {
+    'cpp': Cpp
+}
 
-    def update_keywords(self, data):
-        self.keywords = data
 
-    def header(self):
-        return ""
-
+def get(name=None):
+    return languages.get(name, None)

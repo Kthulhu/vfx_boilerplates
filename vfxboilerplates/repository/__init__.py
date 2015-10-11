@@ -3,64 +3,26 @@ __author__ = 'fredrik.brannbacka'
 import vfxboilerplates as vfxb
 import os
 import yaml
-import jinja2
 import codecs
-from vfxboilerplates.launguages.cpp import Cpp
+import vfxboilerplates.launguages as languages
+import vfxboilerplates.applications as applications
+from templating import env, Loader, SourceTemplate
 
 REPOSITORY = {}
 repo_dir = os.path.abspath(os.path.join(vfxb.ROOT_DIR, "..", "repository"))
 
-class MyLoader(jinja2.BaseLoader):
-    def __init__(self, source):
-        print "HERE"
-        self.source = source
-
-    def get_source(self, environment, template):
-        return template, self.source, lambda: False
-
-def classify(value):
-    return value[0].upper() + value[1:]
-
-env = jinja2.Environment(loader=MyLoader(''))
-env.filters['classify'] = classify
-
-class BaseTemplate(object):
-    def __init__(self, source, destination, parent):
-        self.parent = parent
-        self.file_path = source
-        self.source_template = env.get_template(codecs.open(source, encoding='utf-8', mode='r').read())
-        self.destination_template = env.get_template(destination)
-        self.language = Cpp
-
-    def get_keywords(self):
-        return {}
-
-    def render(self, data):
-        res = {}
-        res['destination'] = os.path.join(self.parent.destination_dir, self.destination_template.render(data))
-        data['filepath'] = res['destination']
-        data['filename'] = os.path.basename(res['destination'])
-        data['basename'] = os.path.splitext(data['filename'])[0]
-        data['language'] = self.language(data)
-        res['source'] = self.source_template.render(data)
-        return res
-
-class SourceTemplate(BaseTemplate):
-    def get_keywords(self):
-        return {'filename': os.path.basename(self.file_path)}
-
-
-class FilenameTemplate(BaseTemplate):
-    pass
 
 class Template(object):
-    def __init__(self, id, name, description, file_root, files):
+    def __init__(self, id, name, description, file_root, files, language, application):
         self.id = id
         self.name = name
+        self.project = "Untitled"
         self.description = description
         self.file_root = file_root
         self.files = files
         self.destination_dir = os.getcwd()
+        self.language = language
+        self.application = application()
 
     def set_destination(self, dest):
         self.destination_dir = dest
@@ -75,11 +37,11 @@ class Template(object):
 
     def get_keywords(self):
         keywords = {'id': self.id,
-                'name': self.name,
-                'description': self.description,
-                'file_root': self.file_root,
-                'project': self.project,
-                }
+                    'name': self.name,
+                    'description': self.description,
+                    'file_root': self.file_root,
+                    'project': self.project,
+                    }
         return keywords
 
     def render(self, template):
@@ -89,8 +51,11 @@ class Template(object):
     def write(self):
         for f in self.get_files():
             templates = self.render(f)
+            try:
+                os.makedirs(os.path.dirname(templates['destination']))
+            except:
+                pass
             print "Writing:", templates['destination']
-            #print templates
             with codecs.open(templates['destination'], encoding='utf-8', mode='w') as dst:
                 dst.write(templates['source'])
 
@@ -104,26 +69,28 @@ class Template(object):
         pass
 
     def __str__(self):
-        return "<{template.__class__.__name__} | {template.name} | {template.description}> {template.file_root}".format(template=self)
+        return "<{template.__class__.__name__} | {template.name} | {template.description}> {template.file_root}".format(
+            template=self)
 
     @classmethod
     def creator(cls, index):
         stream = file(index, 'r')
         file_root = os.path.dirname(os.path.abspath(index))
         index = yaml.load(stream)
-        template = cls(index['id'], index.get('name', 'Untitled'), index.get('description', ''), file_root, index.get('files', []))
+        template = cls(
+            id=index['id'],
+            name=index.get('name', 'Untitled'),
+            description=index.get('description', ''),
+            file_root=file_root,
+            files=index.get('files', []),
+            language=languages.get(index.get('language', None)),
+            application=applications.get(index.get('application', None))
+        )
         return template
+
 
 def index_repository():
     for root, dirs, files in os.walk(repo_dir):
         if "index.yaml" in files:
             rep = Template.creator(os.path.join(root, "index.yaml"))
             REPOSITORY[rep.id] = rep
-
-        #print(sum(getsize(join(root, name)) for name in files), end=" ")
-        #print("bytes in", len(files), "non-directory files")
-        #if 'CVS' in dirs:
-        #    dirs.remove('CVS')  # don't visit CVS directories
-
-
-
